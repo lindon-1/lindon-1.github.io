@@ -1,0 +1,267 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Boot 自动配置原理 | Hexo</title><meta name="author" content="lindl"><meta name="copyright" content="lindl"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="🚀 Spring Boot 自动配置原理Spring Boot 的**自动配置（Auto-Configuration）**是其“约定优于配置”理念的核心体现，它旨在根据项目的依赖、类路径和配置，自动推断并配置好应用程序所需的组件，从而让开发者能够快速启动项目，减少繁琐的样板配置。 💡 核心原理概述 启动时加载一批预定义的配置类，再根据类路径、配置项和容器现状做条件判断，满足条件就自动注册 Be">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot 自动配置原理">
+<meta property="og:url" content="http://example.com/2025/06/02/2025-06-02/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="🚀 Spring Boot 自动配置原理Spring Boot 的**自动配置（Auto-Configuration）**是其“约定优于配置”理念的核心体现，它旨在根据项目的依赖、类路径和配置，自动推断并配置好应用程序所需的组件，从而让开发者能够快速启动项目，减少繁琐的样板配置。 💡 核心原理概述 启动时加载一批预定义的配置类，再根据类路径、配置项和容器现状做条件判断，满足条件就自动注册 Be">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-06-02T11:30:00.000Z">
+<meta property="article:modified_time" content="2026-04-23T04:52:39.308Z">
+<meta property="article:author" content="lindl">
+<meta property="article:tag" content="Spring Boot">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Boot 自动配置原理",
+  "url": "http://example.com/2025/06/02/2025-06-02/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-06-02T11:30:00.000Z",
+  "dateModified": "2026-04-23T04:52:39.308Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "lindl",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/06/02/2025-06-02/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Boot 自动配置原理',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Boot 自动配置原理</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Spring Boot 自动配置原理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-06-02T11:30:00.000Z" title="Created 2025-06-02 19:30:00">2025-06-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-04-23T04:52:39.308Z" title="Updated 2026-04-23 12:52:39">2026-04-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%BC%80%E5%8F%91/">Java开发</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="🚀-Spring-Boot-自动配置原理"><a href="#🚀-Spring-Boot-自动配置原理" class="headerlink" title="🚀 Spring Boot 自动配置原理"></a>🚀 Spring Boot 自动配置原理</h1><p>Spring Boot 的**自动配置（Auto-Configuration）**是其“约定优于配置”理念的核心体现，它旨在根据项目的依赖、类路径和配置，自动推断并配置好应用程序所需的组件，从而让开发者能够快速启动项目，减少繁琐的样板配置。</p>
+<h2 id="💡-核心原理概述"><a href="#💡-核心原理概述" class="headerlink" title="💡 核心原理概述"></a>💡 核心原理概述</h2><blockquote>
+<p>启动时加载一批预定义的配置类，再根据类路径、配置项和容器现状做条件判断，<strong>满足条件就自动注册 Bean，不满足就跳过，且用户自定义配置优先</strong>。</p>
+</blockquote>
+<p>下面将从<strong>核心入口</strong>、<strong>加载机制</strong>、<strong>条件注解</strong>和<strong>完整流程</strong>四个方面为你详细解析。</p>
+<hr>
+<h2 id="🔑-一、核心入口：-SpringBootApplication"><a href="#🔑-一、核心入口：-SpringBootApplication" class="headerlink" title="🔑 一、核心入口：@SpringBootApplication"></a>🔑 一、核心入口：@SpringBootApplication</h2><p>自动配置的魔法始于我们熟悉的 <code>@SpringBootApplication</code> 注解。它本身是一个复合注解，其中最关键的是 <code>@EnableAutoConfiguration</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// @SpringBootApplication 简化源码</span></span><br><span class="line"><span class="meta">@SpringBootConfiguration</span></span><br><span class="line"><span class="meta">@EnableAutoConfiguration</span>  <span class="comment">// 核心：开启自动配置</span></span><br><span class="line"><span class="meta">@ComponentScan</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> SpringBootApplication &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>@EnableAutoConfiguration</code> 注解通过 <code>@Import</code> 导入了 <code>AutoConfigurationImportSelector</code> 类，这是实现自动配置的关键。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// @EnableAutoConfiguration 简化源码</span></span><br><span class="line"><span class="meta">@AutoConfigurationPackage</span> <span class="comment">// 记录启动类所在包，供JPA等组件扫描使用</span></span><br><span class="line"><span class="meta">@Import(AutoConfigurationImportSelector.class)</span> <span class="comment">// 核心：导入自动配置选择器</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> EnableAutoConfiguration &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📜-二、加载机制：从配置清单到选择器"><a href="#📜-二、加载机制：从配置清单到选择器" class="headerlink" title="📜 二、加载机制：从配置清单到选择器"></a>📜 二、加载机制：从配置清单到选择器</h2><p><code>AutoConfigurationImportSelector</code> 的工作是找到所有可能的自动配置类，并根据条件筛选出真正需要的那些。</p>
+<h3 id="1️⃣-读取配置清单"><a href="#1️⃣-读取配置清单" class="headerlink" title="1️⃣ 读取配置清单"></a>1️⃣ 读取配置清单</h3><p>Spring Boot 在启动时，会通过 <code>AutoConfigurationImportSelector</code> 去扫描所有 Jar 包下的一个特定文件，这个文件里列出了所有候选的自动配置类。</p>
+<table>
+<thead>
+<tr>
+<th align="left">Spring Boot 版本</th>
+<th align="left">配置文件路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>3.x+</strong></td>
+<td align="left"><code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code></td>
+</tr>
+<tr>
+<td align="left"><strong>2.x</strong></td>
+<td align="left"><code>META-INF/spring.factories</code></td>
+</tr>
+</tbody></table>
+<p>这个清单中包含了<strong>上百个自动配置类</strong>，例如：</p>
+<ul>
+<li><code>DataSourceAutoConfiguration</code></li>
+<li><code>WebMvcAutoConfiguration</code></li>
+<li><code>RedisAutoConfiguration</code></li>
+<li>…</li>
+</ul>
+<h3 id="2️⃣-筛选配置类"><a href="#2️⃣-筛选配置类" class="headerlink" title="2️⃣ 筛选配置类"></a>2️⃣ 筛选配置类</h3><p>加载了所有候选类后，<code>AutoConfigurationImportSelector</code> 并不会全部导入，而是会进行筛选：</p>
+<ol>
+<li><strong>排除指定类</strong>：首先排除用户通过 <code>@EnableAutoConfiguration</code> 的 <code>exclude</code> 属性或配置文件指定的类。</li>
+<li><strong>条件判断</strong>：然后进入最关键的条件判断环节。</li>
+</ol>
+<hr>
+<h2 id="⚙️-三、条件注解：实现“按需装配”"><a href="#⚙️-三、条件注解：实现“按需装配”" class="headerlink" title="⚙️ 三、条件注解：实现“按需装配”"></a>⚙️ 三、条件注解：实现“按需装配”</h2><p>自动配置之所以“智能”，核心在于 <code>@Conditional</code> 系列条件注解。这些注解就像一个开关，<strong>只有满足特定条件时，对应的配置类才会生效</strong>。</p>
+<h3 id="常用条件注解"><a href="#常用条件注解" class="headerlink" title="常用条件注解"></a>常用条件注解</h3><h4 id="✅-ConditionalOnClass"><a href="#✅-ConditionalOnClass" class="headerlink" title="✅ @ConditionalOnClass"></a>✅ @ConditionalOnClass</h4><p>当类路径下存在指定的类时，配置才生效。</p>
+<blockquote>
+<p><strong>示例</strong>：只有当项目中引入了 <code>spring-webmvc</code> 依赖，<code>DispatcherServlet</code> 类存在于类路径时，<code>WebMvcAutoConfiguration</code> 才会被加载。</p>
+</blockquote>
+<h4 id="✅-ConditionalOnMissingBean"><a href="#✅-ConditionalOnMissingBean" class="headerlink" title="✅ @ConditionalOnMissingBean"></a>✅ @ConditionalOnMissingBean</h4><p>当 Spring 容器中不存在指定的 Bean 时，配置才生效。</p>
+<blockquote>
+<p><strong>重要性</strong>：这保证了<strong>用户自定义配置的优先权</strong>。如果你自己定义了一个 <code>DataSource</code> Bean，那么 Spring Boot 默认的 <code>DataSourceAutoConfiguration</code> 就会“退让”，不会重复创建。</p>
+</blockquote>
+<h4 id="✅-ConditionalOnProperty"><a href="#✅-ConditionalOnProperty" class="headerlink" title="✅ @ConditionalOnProperty"></a>✅ @ConditionalOnProperty</h4><p>当配置文件（如 <code>application.yml</code>）中存在指定的属性且值匹配时，配置才生效。</p>
+<h4 id="✅-ConditionalOnWebApplication"><a href="#✅-ConditionalOnWebApplication" class="headerlink" title="✅ @ConditionalOnWebApplication"></a>✅ @ConditionalOnWebApplication</h4><p>当应用是 Web 应用时，配置才生效。</p>
+<hr>
+<h2 id="🔄-四、完整流程总结"><a href="#🔄-四、完整流程总结" class="headerlink" title="🔄 四、完整流程总结"></a>🔄 四、完整流程总结</h2><p>我们可以将 Spring Boot 自动配置的整个过程串联起来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line">    A[🎯 启动应用] --&gt; B[@SpringBootApplication 主类启动]</span><br><span class="line">    B --&gt; C[🔓 @EnableAutoConfiguration 被激活]</span><br><span class="line">    C --&gt; D[📥 @Import 引入 AutoConfigurationImportSelector]</span><br><span class="line">    D --&gt; E[📋 读取 AutoConfiguration.imports / spring.factories]</span><br><span class="line">    E --&gt; F[🔍 获取所有候选自动配置类]</span><br><span class="line">    F --&gt; G[⚖️ @Conditional 条件过滤]</span><br><span class="line">    G --&gt; H&#123;条件是否满足?&#125;</span><br><span class="line">    H --&gt;|✅ 是| I[📦 注册 Bean 到 IoC 容器]</span><br><span class="line">    H --&gt;|❌ 否| J[⏭️ 跳过该配置]</span><br><span class="line">    I --&gt; K[🎉 应用就绪]</span><br><span class="line">    J --&gt; K</span><br></pre></td></tr></table></figure>
+
+<h3 id="流程步骤详解"><a href="#流程步骤详解" class="headerlink" title="流程步骤详解"></a>流程步骤详解</h3><ol>
+<li><strong>启动应用</strong>：应用从带有 <code>@SpringBootApplication</code> 的主类启动。</li>
+<li><strong>触发自动配置</strong>：<code>@EnableAutoConfiguration</code> 注解被激活。</li>
+<li><strong>导入选择器</strong>：通过 <code>@Import</code> 引入 <code>AutoConfigurationImportSelector</code>。</li>
+<li><strong>加载候选清单</strong>：选择器读取 <code>AutoConfiguration.imports</code> (或 <code>spring.factories</code>) 文件，获取所有候选的自动配置类。</li>
+<li><strong>条件过滤</strong>：根据 <code>@Conditional</code> 系列注解，结合当前项目的类路径、已有 Bean 和配置文件，对所有候选配置类进行筛选。</li>
+<li><strong>注册 Bean</strong>：将通过筛选的配置类导入 Spring 容器，执行其中的 <code>@Bean</code> 方法，将组件注册到 IoC 容器中。</li>
+<li><strong>应用就绪</strong>：所有符合条件的组件都已自动配置完毕，应用启动完成。</li>
+</ol>
+<hr>
+<h2 id="🛠️-五、调试技巧"><a href="#🛠️-五、调试技巧" class="headerlink" title="🛠️ 五、调试技巧"></a>🛠️ 五、调试技巧</h2><p>如果你想亲眼看看哪些自动配置生效了，哪些没有，以及为什么没有，可以在配置文件中开启调试模式：</p>
+<h3 id="方法一：application-properties"><a href="#方法一：application-properties" class="headerlink" title="方法一：application.properties"></a>方法一：application.properties</h3><figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">debug</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="方法二：application-yml"><a href="#方法二：application-yml" class="headerlink" title="方法二：application.yml"></a>方法二：application.yml</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">debug:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>启动应用后，控制台的日志会打印一份详细的 <strong>AUTO-CONFIGURATION REPORT</strong>，其中包含：</p>
+<table>
+<thead>
+<tr>
+<th align="left">报告类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Positive matches</strong></td>
+<td align="left">✅ 匹配成功并生效的配置</td>
+</tr>
+<tr>
+<td align="left"><strong>Negative matches</strong></td>
+<td align="left">❌ 匹配失败未生效的配置及原因</td>
+</tr>
+</tbody></table>
+<p>通过这个报告，你可以清晰地了解：</p>
+<ul>
+<li>哪些自动配置被加载了</li>
+<li>哪些被跳过了</li>
+<li>跳过的具体原因是什么</li>
+</ul>
+<hr>
+<h2 id="📝-总结"><a href="#📝-总结" class="headerlink" title="📝 总结"></a>📝 总结</h2><p>Spring Boot 自动配置的核心思想可以概括为三个关键词：</p>
+<ol>
+<li><strong>约定优于配置</strong> - 提供合理的默认配置</li>
+<li><strong>按需装配</strong> - 通过条件注解智能判断</li>
+<li><strong>用户优先</strong> - 自定义配置永远覆盖默认配置</li>
+</ol>
+<p>掌握自动配置原理，不仅能帮助你更好地理解 Spring Boot 的工作机制，还能让你在遇到问题时快速定位和解决！ 🎯</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">lindl</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/06/02/2025-06-02/">http://example.com/2025/06/02/2025-06-02/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spring-Boot/">Spring Boot</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/06/15/2025-06-15/" title="MySQL 索引详解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">MySQL 索引详解</div></div><div class="info-2"><div class="info-item-1">🗄️ MySQL 索引详解MySQL 索引是提升数据库查询性能的核心机制,其本质是一种数据结构,类似于书籍的目录,能帮助数据库引擎快速定位数据,避免效率低下的全表扫描。 📋 索引分类概览MySQL 中的索引可以从多个维度进行分类:    分类维度 主要类型    数据结构 B+树索引、Hash 索引、全文索引、空间索引   物理存储 聚簇索引、非聚簇索引   功能特性 主键索引、唯一索引、普通索引、联合索引、覆盖索引   下面将从这三个维度为你详细解析。  🌳 一、按数据结构分类这是从索引底层实现的角度进行的划分,决定了索引的核心能力。 1. B+树索引 ⭐这是 MySQL(尤其是 InnoDB 存储引擎)中最常用、最核心的索引类型。 🔍 工作原理B+树是一种多路平衡查找树,它的核心特点是:  非叶子节点: 只存储索引键值,不存储数据,这使得单个节点能容纳更多键值,树变得更”矮胖”,减少了磁盘 I&#x2F;O 次数 叶子节点: 存储所有索引键值和对应的数据(或指向数据的指针) 双向链表: 所有叶子节点通过双向链表连接,这使得范围查询(如 WHERE id &gt; 10...</div></div></div></a><a class="pagination-related" href="/2025/05/30/2025-05-30/" title="MyBatis-Plus 源码深度解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">MyBatis-Plus 源码深度解析</div></div><div class="info-2"><div class="info-item-1">🔍 MyBatis-Plus 源码深度解析 MyBatis-Plus (MP) 之所以能成为 Java 开发者的”神器”，是因为它在 MyBatis 原生功能之上，通过”自动装配“和”元数据管理“，把大量的重复劳动（如写简单的 CRUD SQL）自动化了。  要看透 MP 的源码，核心就抓住一条主线： 它是如何把 Java 实体类（Entity）变成 SQL 语句并执行出去的？ 我将其核心流程拆解为四个关键阶段： 1启动初始化 → SQL 注入 → 元数据解析 → 执行与拦截   🚀 一、启动初始化：一切的开始当你启动 Spring Boot 项目时，MP 并没有闲着，它在后台做了一次”大扫除“和”大布局“。 1.1 核心入口：MybatisPlusAutoConfiguration🔧 自动装配Spring Boot 启动时，@EnableAutoConfiguration 会加载 MP 的配置类。 🏗️ SqlSessionFactory 创建MP 扩展了原生的 SqlSessionFactoryBean，在初始化时：  ✅ 配置了数据源 ✅ 注册了 MP 特有的插件（...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/25/2026-03-25/" title="Spring Boot 并发请求处理能力详解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-25</div><div class="info-item-2">Spring Boot 并发请求处理能力详解</div></div><div class="info-2"><div class="info-item-1">Spring Boot 并发请求处理能力详解📊 核心结论Spring Boot 能同时处理多少请求，核心取决于其内置的 Servlet 容器（默认为 Tomcat）的配置。  默认配置下的承载能力：  最大连接数: 8192 + 100 &#x3D; 8292 个连接 并行处理数: 200 个请求（由工作线程池决定）    🔍 关键参数解析在默认配置下，Spring Boot 应用能同时处理的请求数由以下两个关键参数决定： 1️⃣ 最大连接数 (max-connections) 默认值: 8192 作用: Tomcat 能够接受和处理的最大连接数  2️⃣ 等待队列长度 (accept-count) 默认值: 100 作用: 当所有连接都在处理请求时，新的连接请求会进入这个队列等待  3️⃣ 工作线程池大小 (max-threads) 默认值: 200 作用: 真正能同时被并行处理的请求数量   ⚠️ 重要提示: 超出 200 个的请求会进入等待队列，直到有线程空闲。   ⚙️ Tomcat 四个核心配置你可以通过在 application.yml 或 application...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">lindl</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">41</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%9A%80-Spring-Boot-%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E5%8E%9F%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">🚀 Spring Boot 自动配置原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%A1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">💡 核心原理概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%91-%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E5%85%A5%E5%8F%A3%EF%BC%9A-SpringBootApplication"><span class="toc-number">1.2.</span> <span class="toc-text">🔑 一、核心入口：@SpringBootApplication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%9C-%E4%BA%8C%E3%80%81%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%EF%BC%9A%E4%BB%8E%E9%85%8D%E7%BD%AE%E6%B8%85%E5%8D%95%E5%88%B0%E9%80%89%E6%8B%A9%E5%99%A8"><span class="toc-number">1.3.</span> <span class="toc-text">📜 二、加载机制：从配置清单到选择器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E8%AF%BB%E5%8F%96%E9%85%8D%E7%BD%AE%E6%B8%85%E5%8D%95"><span class="toc-number">1.3.1.</span> <span class="toc-text">1️⃣ 读取配置清单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E7%AD%9B%E9%80%89%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-number">1.3.2.</span> <span class="toc-text">2️⃣ 筛选配置类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%B8%89%E3%80%81%E6%9D%A1%E4%BB%B6%E6%B3%A8%E8%A7%A3%EF%BC%9A%E5%AE%9E%E7%8E%B0%E2%80%9C%E6%8C%89%E9%9C%80%E8%A3%85%E9%85%8D%E2%80%9D"><span class="toc-number">1.4.</span> <span class="toc-text">⚙️ 三、条件注解：实现“按需装配”</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E6%9D%A1%E4%BB%B6%E6%B3%A8%E8%A7%A3"><span class="toc-number">1.4.1.</span> <span class="toc-text">常用条件注解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%9C%85-ConditionalOnClass"><span class="toc-number">1.4.1.1.</span> <span class="toc-text">✅ @ConditionalOnClass</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%9C%85-ConditionalOnMissingBean"><span class="toc-number">1.4.1.2.</span> <span class="toc-text">✅ @ConditionalOnMissingBean</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%9C%85-ConditionalOnProperty"><span class="toc-number">1.4.1.3.</span> <span class="toc-text">✅ @ConditionalOnProperty</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%9C%85-ConditionalOnWebApplication"><span class="toc-number">1.4.1.4.</span> <span class="toc-text">✅ @ConditionalOnWebApplication</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E5%9B%9B%E3%80%81%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B%E6%80%BB%E7%BB%93"><span class="toc-number">1.5.</span> <span class="toc-text">🔄 四、完整流程总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E6%AD%A5%E9%AA%A4%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.5.1.</span> <span class="toc-text">流程步骤详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0%EF%B8%8F-%E4%BA%94%E3%80%81%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7"><span class="toc-number">1.6.</span> <span class="toc-text">🛠️ 五、调试技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9Aapplication-properties"><span class="toc-number">1.6.1.</span> <span class="toc-text">方法一：application.properties</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9Aapplication-yml"><span class="toc-number">1.6.2.</span> <span class="toc-text">方法二：application.yml</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%9D-%E6%80%BB%E7%BB%93"><span class="toc-number">1.7.</span> <span class="toc-text">📝 总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/2026-04-21/" title="Redis Cluster 生产环境关键问题与解决方案">Redis Cluster 生产环境关键问题与解决方案</a><time datetime="2026-04-22T06:16:01.000Z" title="Created 2026-04-22 14:16:01">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/hello-world/" title="Hello World">Hello World</a><time datetime="2026-04-22T06:07:39.619Z" title="Created 2026-04-22 14:07:39">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/25/2026-03-25/" title="Spring Boot 并发请求处理能力详解">Spring Boot 并发请求处理能力详解</a><time datetime="2026-03-25T07:30:00.000Z" title="Created 2026-03-25 15:30:00">2026-03-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/29/2025-10-29/" title="Java 并发编程实战：应用场景、常见问题与优雅处理方案">Java 并发编程实战：应用场景、常见问题与优雅处理方案</a><time datetime="2025-10-29T02:00:00.000Z" title="Created 2025-10-29 10:00:00">2025-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/12/2025-10-12/" title="Elasticsearch 生产环境实战：核心概念、问题排查与模糊查询详解">Elasticsearch 生产环境实战：核心概念、问题排查与模糊查询详解</a><time datetime="2025-10-12T02:00:00.000Z" title="Created 2025-10-12 10:00:00">2025-10-12</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By lindl</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

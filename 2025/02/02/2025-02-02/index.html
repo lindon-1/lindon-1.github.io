@@ -1,0 +1,524 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Git 开发规范与常用命令详解 | Hexo</title><meta name="author" content="lindl"><meta name="copyright" content="lindl"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="📚 Git 开发规范（最佳实践） 规范的核心目的是：保持历史清晰、保证主分支稳定、便于回溯  一、分支管理规范这是团队协作的基石，通常采用 Git Flow 的简化版。 分支类型对照表   分支类型 命名规则 说明 存活周期    主分支 main &#x2F; master 生产环境。永远稳定，禁止直接 Push，只能通过合并请求（PR&#x2F;MR）合并 永久   开发分支 dev &amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git 开发规范与常用命令详解">
+<meta property="og:url" content="http://example.com/2025/02/02/2025-02-02/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="📚 Git 开发规范（最佳实践） 规范的核心目的是：保持历史清晰、保证主分支稳定、便于回溯  一、分支管理规范这是团队协作的基石，通常采用 Git Flow 的简化版。 分支类型对照表   分支类型 命名规则 说明 存活周期    主分支 main &#x2F; master 生产环境。永远稳定，禁止直接 Push，只能通过合并请求（PR&#x2F;MR）合并 永久   开发分支 dev &amp;#x">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-02-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-24T01:49:26.722Z">
+<meta property="article:author" content="lindl">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="开发规范">
+<meta property="article:tag" content="最佳实践">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Git 开发规范与常用命令详解",
+  "url": "http://example.com/2025/02/02/2025-02-02/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-02-01T16:00:00.000Z",
+  "dateModified": "2026-04-24T01:49:26.722Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "lindl",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/02/02/2025-02-02/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Git 开发规范与常用命令详解',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">Git 开发规范与常用命令详解</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Git 开发规范与常用命令详解</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-02-01T16:00:00.000Z" title="Created 2025-02-02 00:00:00">2025-02-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-04-24T01:49:26.722Z" title="Updated 2026-04-24 09:49:26">2026-04-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/">技术分享</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="📚-Git-开发规范（最佳实践）"><a href="#📚-Git-开发规范（最佳实践）" class="headerlink" title="📚 Git 开发规范（最佳实践）"></a>📚 Git 开发规范（最佳实践）</h1><blockquote>
+<p>规范的核心目的是：<strong>保持历史清晰、保证主分支稳定、便于回溯</strong></p>
+</blockquote>
+<h2 id="一、分支管理规范"><a href="#一、分支管理规范" class="headerlink" title="一、分支管理规范"></a>一、分支管理规范</h2><p>这是团队协作的基石，通常采用 <strong>Git Flow</strong> 的简化版。</p>
+<h3 id="分支类型对照表"><a href="#分支类型对照表" class="headerlink" title="分支类型对照表"></a>分支类型对照表</h3><table>
+<thead>
+<tr>
+<th>分支类型</th>
+<th>命名规则</th>
+<th>说明</th>
+<th>存活周期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>主分支</strong></td>
+<td><code>main</code> &#x2F; <code>master</code></td>
+<td>生产环境。永远稳定，禁止直接 Push，只能通过合并请求（PR&#x2F;MR）合并</td>
+<td>永久</td>
+</tr>
+<tr>
+<td><strong>开发分支</strong></td>
+<td><code>dev</code> &#x2F; <code>develop</code></td>
+<td>测试环境。日常开发集成的分支，功能测试通过后合并于此</td>
+<td>永久</td>
+</tr>
+<tr>
+<td><strong>功能分支</strong></td>
+<td><code>feat/xxx</code></td>
+<td>新功能。从 dev 切出，开发完合并回 dev</td>
+<td>临时（用完即删）</td>
+</tr>
+<tr>
+<td><strong>修复分支</strong></td>
+<td><code>fix/xxx</code></td>
+<td>Bug修复。从 dev 或 main 切出</td>
+<td>临时</td>
+</tr>
+<tr>
+<td><strong>热修复</strong></td>
+<td><code>hotfix/xxx</code></td>
+<td>紧急修复。直接从 main 切出，修完合并回 main 和 dev</td>
+<td>临时</td>
+</tr>
+</tbody></table>
+<h3 id="命名建议"><a href="#命名建议" class="headerlink" title="命名建议"></a>命名建议</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 功能分支</span></span><br><span class="line">feat/user-login        <span class="comment"># 用户登录</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 修复分支</span></span><br><span class="line">fix/order-bug          <span class="comment"># 订单Bug</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 文档分支</span></span><br><span class="line">docs/update-readme     <span class="comment"># 更新README文档</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、Commit-提交规范"><a href="#二、Commit-提交规范" class="headerlink" title="二、Commit 提交规范"></a>二、Commit 提交规范</h2><p>清晰的提交记录能让未来的你感谢现在的自己。业界通用的标准是 <strong>Conventional Commits</strong>。</p>
+<h3 id="提交格式"><a href="#提交格式" class="headerlink" title="提交格式"></a>提交格式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="常用类型（Type）"><a href="#常用类型（Type）" class="headerlink" title="常用类型（Type）"></a>常用类型（Type）</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>feat</code></td>
+<td>新功能</td>
+<td><code>feat(cart): add checkout button</code></td>
+</tr>
+<tr>
+<td><code>fix</code></td>
+<td>修补 Bug</td>
+<td><code>fix(auth): resolve login crash</code></td>
+</tr>
+<tr>
+<td><code>docs</code></td>
+<td>仅文档变更</td>
+<td><code>docs: update API description</code></td>
+</tr>
+<tr>
+<td><code>style</code></td>
+<td>格式调整（不影响逻辑）</td>
+<td><code>style: format code with prettier</code></td>
+</tr>
+<tr>
+<td><code>refactor</code></td>
+<td>代码重构</td>
+<td><code>refactor: simplify user logic</code></td>
+</tr>
+<tr>
+<td><code>chore</code></td>
+<td>构建&#x2F;工具变动</td>
+<td><code>chore: update dependencies</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、工作流红线（绝对禁止）"><a href="#三、工作流红线（绝对禁止）" class="headerlink" title="三、工作流红线（绝对禁止）"></a>三、工作流红线（绝对禁止）</h2><p>❌ <strong>禁止直接向 main 或 master 分支 Push 代码</strong><br>必须走 Pull Request&#x2F;Merge Request 流程</p>
+<p>❌ <strong>禁止提交大文件</strong><br>如 <code>.zip</code>、<code>.sql</code>、视频等，应使用 Git LFS 或文件服务器</p>
+<p>❌ <strong>禁止在公共分支（如 dev）上使用 <code>git push --force</code></strong><br>除非你非常清楚后果</p>
+<p>❌ <strong>禁止提交本地配置文件</strong><br>如 <code>.env</code>、<code>config.local.js</code>，必须在 <code>.gitignore</code> 中排除</p>
+<hr>
+<h1 id="🛠️-Git-常用命令详解"><a href="#🛠️-Git-常用命令详解" class="headerlink" title="🛠️ Git 常用命令详解"></a>🛠️ Git 常用命令详解</h1><h2 id="启动与基础操作"><a href="#启动与基础操作" class="headerlink" title="启动与基础操作"></a>启动与基础操作</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+<th>常用参数&#x2F;示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>git clone</code></td>
+<td>克隆远程仓库</td>
+<td><code>git clone &lt;url&gt;</code></td>
+</tr>
+<tr>
+<td><code>git add</code></td>
+<td>将文件加入暂存区</td>
+<td><code>git add .</code>（所有）<br><code>git add file.js</code>（指定）</td>
+</tr>
+<tr>
+<td><code>git commit</code></td>
+<td>提交到本地仓库</td>
+<td><code>git commit -m &quot;feat: init&quot;</code><br><code>git commit --amend</code>（修改上一次提交）</td>
+</tr>
+<tr>
+<td><code>git status</code></td>
+<td>查看文件状态</td>
+<td>检查哪些文件被修改或未暂存</td>
+</tr>
+<tr>
+<td><code>git diff</code></td>
+<td>查看代码差异</td>
+<td><code>git diff</code>（工作区对比暂存区）<br><code>git diff --staged</code>（暂存区对比仓库）</td>
+</tr>
+</tbody></table>
+<h2 id="分支操作"><a href="#分支操作" class="headerlink" title="分支操作"></a>分支操作</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>git branch</code></td>
+<td>查看&#x2F;创建分支</td>
+<td><code>git branch</code>（查看）<br><code>git branch feat-xxx</code>（创建）</td>
+</tr>
+<tr>
+<td><code>git checkout</code></td>
+<td>切换分支</td>
+<td><code>git checkout dev</code><br><code>git checkout -b feat-xxx</code>（创建并切换）</td>
+</tr>
+<tr>
+<td><code>git switch</code></td>
+<td>切换分支（新版推荐）</td>
+<td><code>git switch -c feat-xxx</code></td>
+</tr>
+<tr>
+<td><code>git merge</code></td>
+<td>合并分支</td>
+<td><code>git merge feat-xxx</code></td>
+</tr>
+<tr>
+<td><code>git branch -d</code></td>
+<td>删除分支</td>
+<td><code>git branch -d feat-xxx</code>（已合并）<br><code>git branch -D feat-xxx</code>（强制删除）</td>
+</tr>
+</tbody></table>
+<h2 id="同步与远程"><a href="#同步与远程" class="headerlink" title="同步与远程"></a>同步与远程</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>git pull</code></td>
+<td>拉取并合并</td>
+<td><code>git pull origin dev</code></td>
+</tr>
+<tr>
+<td><code>git fetch</code></td>
+<td>仅拉取不合并</td>
+<td><code>git fetch origin</code></td>
+</tr>
+<tr>
+<td><code>git push</code></td>
+<td>推送代码</td>
+<td><code>git push origin feat-xxx</code><br><code>git push -u origin feat-xxx</code>（首次关联）</td>
+</tr>
+<tr>
+<td><code>git remote</code></td>
+<td>管理远程仓库</td>
+<td><code>git remote -v</code>（查看远程地址）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="“后悔药”操作（撤销与回退）"><a href="#“后悔药”操作（撤销与回退）" class="headerlink" title="“后悔药”操作（撤销与回退）"></a>“后悔药”操作（撤销与回退）</h2><p>这是新手最容易慌张的地方，请根据场景选择：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>你的需求</th>
+<th>推荐命令</th>
+<th>风险提示</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>改错了文件</td>
+<td>丢弃工作区的修改</td>
+<td><code>git checkout -- &lt;file&gt;</code><br><code>git restore &lt;file&gt;</code></td>
+<td>⚠️ 修改彻底丢失</td>
+</tr>
+<tr>
+<td>add 错了</td>
+<td>撤销暂存（保留修改）</td>
+<td><code>git reset HEAD &lt;file&gt;</code><br><code>git restore --staged &lt;file&gt;</code></td>
+<td>✅ 安全</td>
+</tr>
+<tr>
+<td>commit 错了</td>
+<td>撤销提交（保留修改）</td>
+<td><code>git reset --soft HEAD^</code></td>
+<td>修改还在暂存区</td>
+</tr>
+<tr>
+<td>commit 错了</td>
+<td>撤销提交（保留代码但不暂存）</td>
+<td><code>git reset HEAD^</code></td>
+<td>修改回到工作区</td>
+</tr>
+<tr>
+<td>彻底重来</td>
+<td>回滚到某次提交</td>
+<td><code>git reset --hard &lt;commit&gt;</code></td>
+<td>🔴 高危，之后代码全丢</td>
+</tr>
+<tr>
+<td>误删提交</td>
+<td>找回刚才撤销的提交</td>
+<td><code>git reflog</code> 找到ID后 reset</td>
+<td>💊 救命稻草</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="解决冲突"><a href="#解决冲突" class="headerlink" title="解决冲突"></a>解决冲突</h2><p>当你执行 <code>pull</code> 或 <code>merge</code> 时，如果提示 <code>CONFLICT</code>，请按以下步骤操作：</p>
+<ol>
+<li><strong>查看状态</strong>：<code>git status</code>（查看哪些文件冲突）</li>
+<li><strong>手动修改</strong>：打开冲突文件，找到 <code>&gt;&gt;&gt;&gt;&gt;&gt;</code> 标记，保留需要的代码，删除标记</li>
+<li><strong>标记解决</strong>：<code>git add &lt;file&gt;</code></li>
+<li><strong>完成合并</strong>：<code>git commit</code>（Git 会自动生成合并提交信息）</li>
+</ol>
+<hr>
+<h1 id="🚀-标准开发流程演示"><a href="#🚀-标准开发流程演示" class="headerlink" title="🚀 标准开发流程演示"></a>🚀 标准开发流程演示</h1><p>假设你要开发一个”用户登录”功能，标准流程如下：</p>
+<h3 id="1️⃣-同步代码（确保基于最新代码开发）"><a href="#1️⃣-同步代码（确保基于最新代码开发）" class="headerlink" title="1️⃣ 同步代码（确保基于最新代码开发）"></a>1️⃣ 同步代码（确保基于最新代码开发）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout dev</span><br><span class="line">git pull origin dev</span><br></pre></td></tr></table></figure>
+
+<h3 id="2️⃣-创建分支"><a href="#2️⃣-创建分支" class="headerlink" title="2️⃣ 创建分支"></a>2️⃣ 创建分支</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b feat/user-login</span><br></pre></td></tr></table></figure>
+
+<h3 id="3️⃣-开发与提交（小步提交）"><a href="#3️⃣-开发与提交（小步提交）" class="headerlink" title="3️⃣ 开发与提交（小步提交）"></a>3️⃣ 开发与提交（小步提交）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 写代码...</span></span><br><span class="line">git add .</span><br><span class="line">git commit -m <span class="string">&quot;feat(auth): add login api interface&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4️⃣-推送分支"><a href="#4️⃣-推送分支" class="headerlink" title="4️⃣ 推送分支"></a>4️⃣ 推送分支</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin feat/user-login</span><br></pre></td></tr></table></figure>
+
+<h3 id="5️⃣-发起合并请求"><a href="#5️⃣-发起合并请求" class="headerlink" title="5️⃣ 发起合并请求"></a>5️⃣ 发起合并请求</h3><p>去 GitLab&#x2F;GitHub 网页，点击 <strong>“New Merge Request”</strong></p>
+<ul>
+<li><strong>源分支</strong>：<code>feat/user-login</code></li>
+<li><strong>目标分支</strong>：<code>dev</code></li>
+<li>指派同事进行 Code Review</li>
+</ul>
+<h3 id="6️⃣-清理（合并成功后）"><a href="#6️⃣-清理（合并成功后）" class="headerlink" title="6️⃣ 清理（合并成功后）"></a>6️⃣ 清理（合并成功后）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git checkout dev</span><br><span class="line">git pull origin dev              <span class="comment"># 拉取合并后的新代码</span></span><br><span class="line">git branch -d feat/user-login    <span class="comment"># 删除本地旧分支</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="💡-专家提示"><a href="#💡-专家提示" class="headerlink" title="💡 专家提示"></a>💡 专家提示</h1><h2 id="关于-Rebase（变基）"><a href="#关于-Rebase（变基）" class="headerlink" title="关于 Rebase（变基）"></a>关于 Rebase（变基）</h2><p><code>git rebase</code> 可以让提交历史变成一条直线，非常整洁。</p>
+<ul>
+<li>✅ <strong>单人开发分支</strong>：推荐用 rebase</li>
+<li>⚠️ <strong>团队协作合并</strong>：推荐用 merge</li>
+<li>❌ <strong>公共分支（如 dev）</strong>：慎用 rebase，会修改提交历史，可能导致队友的代码冲突</li>
+</ul>
+<h2 id="关于-gitignore"><a href="#关于-gitignore" class="headerlink" title="关于 .gitignore"></a>关于 .gitignore</h2><p>在项目一开始就配置好 <code>.gitignore</code>，排除以下文件：</p>
+<ul>
+<li><code>node_modules/</code></li>
+<li><code>*.log</code></li>
+<li><code>.DS_Store</code></li>
+<li><code>.env</code></li>
+<li><code>dist/</code> 或 <code>build/</code></li>
+</ul>
+<p>这是专业素养的体现。</p>
+<hr>
+<h1 id="🗑️-分支删除指南"><a href="#🗑️-分支删除指南" class="headerlink" title="🗑️ 分支删除指南"></a>🗑️ 分支删除指南</h1><h2 id="强制删除未合并分支"><a href="#强制删除未合并分支" class="headerlink" title="强制删除未合并分支"></a>强制删除未合并分支</h2><p>要强制删除一个本地未合并的 Git 分支，使用 <code>-D</code> 参数（大写 D），这是 <code>--delete --force</code> 的简写形式。</p>
+<h3 id="命令格式"><a href="#命令格式" class="headerlink" title="命令格式"></a>命令格式</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -D &lt;branch-name&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -D feat/experiment</span><br></pre></td></tr></table></figure>
+
+<h3 id="⚠️-重要警告"><a href="#⚠️-重要警告" class="headerlink" title="⚠️ 重要警告"></a>⚠️ 重要警告</h3><blockquote>
+<p><strong>请务必谨慎使用此命令！</strong></p>
+<p>强制删除分支是一个<strong>不可逆的操作</strong>。该分支上所有未合并到其他分支的提交和代码更改都将被<strong>永久丢失</strong>，且很难恢复。在执行前，请再次确认该分支的内容确实不再需要。</p>
+</blockquote>
+<h3 id="为什么需要强制删除？"><a href="#为什么需要强制删除？" class="headerlink" title="为什么需要强制删除？"></a>为什么需要强制删除？</h3><p>当你尝试使用安全的 <code>git branch -d</code> 命令删除一个包含未合并提交的分支时，Git 会阻止你并显示类似下面的错误信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">error: The branch &#x27;feat/experiment&#x27; is not fully merged.</span><br><span class="line">If you are sure you want to delete it, run &#x27;git branch -D feat/experiment&#x27;.</span><br></pre></td></tr></table></figure>
+
+<p>这个提示正是在告诉你，该分支还有未合并的代码，如果你想好了要丢弃这些代码，就应该使用 <code>git branch -D</code> 来强制删除。</p>
+<h3 id="🚫-无法删除当前所在分支"><a href="#🚫-无法删除当前所在分支" class="headerlink" title="🚫 无法删除当前所在分支"></a>🚫 无法删除当前所在分支</h3><p>如果你尝试删除当前所在的分支，Git 会报错：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: Cannot delete branch &#x27;feat/experiment&#x27; checked out at &#x27;/path/to/your/repo&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><strong>解决方法</strong>：先切换到其他分支，然后再执行删除命令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git checkout main</span><br><span class="line">git branch -D feat/experiment</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="🚑-误删分支恢复指南"><a href="#🚑-误删分支恢复指南" class="headerlink" title="🚑 误删分支恢复指南"></a>🚑 误删分支恢复指南</h1><p>别慌！在 Git 中，删除分支通常只是删除了一个”指针”，真正的代码提交（Commit）往往还在仓库里，只要没有被垃圾回收机制清理掉，就有很大的概率可以恢复。</p>
+<p>请按照以下步骤，由简入繁进行恢复：</p>
+<h2 id="方法一：使用-git-reflog（最推荐，成功率最高）"><a href="#方法一：使用-git-reflog（最推荐，成功率最高）" class="headerlink" title="方法一：使用 git reflog（最推荐，成功率最高）"></a>方法一：使用 git reflog（最推荐，成功率最高）</h2><p><code>git reflog</code> 是 Git 的”时光机”，它记录了你所有的操作历史（包括删除分支的操作）。</p>
+<h3 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h3><p><strong>1. 查看操作日志</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reflog</span><br></pre></td></tr></table></figure>
+
+<p>你会看到一列操作记录。请寻找类似这样的条目：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">checkout: moving from 误删的分支名 to 当前分支名</span><br></pre></td></tr></table></figure>
+
+<p>或者该分支最后一次提交的记录。</p>
+<blockquote>
+<p>💡 <strong>技巧</strong>：如果记录太多，可以使用以下命令快速筛选：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Mac/Linux</span></span><br><span class="line">git reflog --all | grep <span class="string">&quot;误删的分支名&quot;</span></span><br></pre></td></tr></table></figure></blockquote>
+<p><strong>2. 找到 Commit ID</strong></p>
+<p>找到误删分支最后一次操作对应的哈希值（即那一行最前面的 ID，如 <code>a1b2c3d</code>）。这就是你分支”断掉”的地方。</p>
+<p><strong>3. 重建分支</strong></p>
+<p>使用找到的 Commit ID 重新创建分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b 误删的分支名 &lt;commit-id&gt;</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b feature/login a1b2c3d</span><br></pre></td></tr></table></figure>
+
+<p>执行完这一步，你的分支就带着之前的代码”原地复活”了。</p>
+<hr>
+<h2 id="方法二：从远程仓库恢复（如果推过远程）"><a href="#方法二：从远程仓库恢复（如果推过远程）" class="headerlink" title="方法二：从远程仓库恢复（如果推过远程）"></a>方法二：从远程仓库恢复（如果推过远程）</h2><p>如果你之前执行过 <code>git push</code>，那么远程仓库（如 GitHub、GitLab）上可能还保留着这个分支。</p>
+<h3 id="操作步骤-1"><a href="#操作步骤-1" class="headerlink" title="操作步骤"></a>操作步骤</h3><p><strong>1. 拉取远程分支</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git fetch origin</span><br></pre></td></tr></table></figure>
+
+<p><strong>2. 本地重建分支</strong></p>
+<p>基于远程分支在本地重新创建一个同名分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b 误删的分支名 origin/误删的分支名</span><br></pre></td></tr></table></figure>
+
+<p>这样你就把远程的分支重新关联回本地了。</p>
+<hr>
+<h2 id="方法三：使用-git-fsck（终极手段）"><a href="#方法三：使用-git-fsck（终极手段）" class="headerlink" title="方法三：使用 git fsck（终极手段）"></a>方法三：使用 git fsck（终极手段）</h2><p>如果 reflog 被清空了（例如执行了 <code>git gc</code>），或者你找不到记录，可以尝试用 <code>git fsck</code> 扫描”悬空”的对象。</p>
+<h3 id="操作步骤-2"><a href="#操作步骤-2" class="headerlink" title="操作步骤"></a>操作步骤</h3><p><strong>1. 查找悬空提交</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git fsck --lost-found</span><br></pre></td></tr></table></figure>
+
+<p>这会列出所有”悬空”的提交（dangling commit）。</p>
+<p><strong>2. 确认内容</strong></p>
+<p>你会看到一堆哈希值。你需要逐个检查，看哪个是你丢失的提交：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git show &lt;commit-hash&gt;</span><br></pre></td></tr></table></figure>
+
+<p>看到熟悉的代码修改后，记下这个哈希值。</p>
+<p><strong>3. 恢复分支</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b 恢复的分支名 &lt;commit-hash&gt;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="⚠️-关键注意事项"><a href="#⚠️-关键注意事项" class="headerlink" title="⚠️ 关键注意事项"></a>⚠️ 关键注意事项</h2><p>🔴 <strong>立即停手</strong><br>误删后，<strong>千万不要执行</strong> <code>git gc</code> 或 <code>git prune</code> 命令，这些命令会彻底清理掉”悬空”的数据，一旦执行，神仙难救。</p>
+<p>⏰ <strong>时效性</strong><br><code>git reflog</code> 默认只保留 <strong>30-90 天</strong>的记录（取决于配置），过期后会被自动清理。所以恢复操作越早越好。</p>
+<p>✅ <strong>验证</strong><br>恢复分支后，建议用 <code>git log</code> 查看一下提交记录，确保代码完整性，然后尽快推送到远程仓库备份：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin &lt;branch-name&gt;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<blockquote>
+<p>💪 <strong>只要没执行垃圾回收，你的代码大概率是安全的，快去试试 <code>git reflog</code> 吧！</strong></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">lindl</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/02/02/2025-02-02/">http://example.com/2025/02/02/2025-02-02/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Git/">Git</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83/">开发规范</a><a class="post-meta__tags" href="/tags/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">最佳实践</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/05/20/2025-05-20/" title="Nacos 源码解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">Nacos 源码解析</div></div><div class="info-2"><div class="info-item-1">🏛️ Nacos 源码深度解析 导读：本文将带你深入理解 Nacos 的核心架构与实现原理。我们不仅看代码，更要把 Nacos 想象成一个”智能物流调度中心”，通过业务场景、核心源码逻辑以及关键代码片段，带你走一遍 Nacos 的核心流程。   一、架构基石：从”打电话”到”拉专线” (Nacos 2.x)📡 通信方式的演进在 Nacos 1.x 时代，客户端和服务端主要依靠：  HTTP 短连接：像打电话，说完就挂 UDP：像大喇叭喊话，可能听不见  到了 Nacos 2.x，核心升级为 gRPC 长连接：  ✅ 像拉了专线视频通话 ✅ 连接稳定，推送可靠 ✅ 性能大幅提升  🔧 源码核心位置 📂 nacos-remote 模块  服务端架构123// BaseGrpcServer.java// 启动时监听端口（如 9848）// 维护 ConnectionManager，手里握着一大把客户端的连接句柄  客户端架构123// GrpcClient.java// 负责建立连接// 如果断了，它会自动重试重连  🎯 请求分发机制服务端不再是一个个独立的 Controll...</div></div></div></a><a class="pagination-related" href="/2025/01/05/2025-01-05/" title="SkyWalking + Prometheus + Grafana 生产环境监控实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">SkyWalking + Prometheus + Grafana 生产环境监控实战</div></div><div class="info-2"><div class="info-item-1">这套 SkyWalking + Prometheus + Grafana 的组合，可以说是目前 Java 微服务架构下的”黄金搭档”。它之所以在生产环境中如此流行，是因为它完美解决了”黑盒”问题——SkyWalking 负责看清调用关系和慢请求，Prometheus 负责监控资源水位和趋势，而 Grafana 则负责把这些数据变成直观的仪表盘。   🚀 第一部分：生产环境落地实战步骤我们将采用 Docker Compose 进行部署，这是生产环境中最稳妥、易维护的方式。 核心组件部署（服务端）我们需要部署三样东西：Elasticsearch（存储链路数据）、SkyWalking OAP（后端分析）、Prometheus（指标收集）。 步骤 1.1：准备 docker-compose.yml创建一个文件夹，放入以下配置文件。这个配置针对生产环境做了内存优化（ES 默认内存较大，这里限制了堆大小）。 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">lindl</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">41</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%93%9A-Git-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83%EF%BC%88%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">📚 Git 开发规范（最佳实践）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83"><span class="toc-number">1.1.</span> <span class="toc-text">一、分支管理规范</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E7%B1%BB%E5%9E%8B%E5%AF%B9%E7%85%A7%E8%A1%A8"><span class="toc-number">1.1.1.</span> <span class="toc-text">分支类型对照表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%BD%E5%90%8D%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.1.2.</span> <span class="toc-text">命名建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Commit-%E6%8F%90%E4%BA%A4%E8%A7%84%E8%8C%83"><span class="toc-number">1.2.</span> <span class="toc-text">二、Commit 提交规范</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.2.1.</span> <span class="toc-text">提交格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E7%B1%BB%E5%9E%8B%EF%BC%88Type%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">常用类型（Type）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%BA%A2%E7%BA%BF%EF%BC%88%E7%BB%9D%E5%AF%B9%E7%A6%81%E6%AD%A2%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">三、工作流红线（绝对禁止）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%9B%A0%EF%B8%8F-Git-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">🛠️ Git 常用命令详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E4%B8%8E%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="toc-number">2.1.</span> <span class="toc-text">启动与基础操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E6%93%8D%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text">分支操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E4%B8%8E%E8%BF%9C%E7%A8%8B"><span class="toc-number">2.3.</span> <span class="toc-text">同步与远程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%80%9C%E5%90%8E%E6%82%94%E8%8D%AF%E2%80%9D%E6%93%8D%E4%BD%9C%EF%BC%88%E6%92%A4%E9%94%80%E4%B8%8E%E5%9B%9E%E9%80%80%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">“后悔药”操作（撤销与回退）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%86%B2%E7%AA%81"><span class="toc-number">2.5.</span> <span class="toc-text">解决冲突</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%9A%80-%E6%A0%87%E5%87%86%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B%E6%BC%94%E7%A4%BA"><span class="toc-number">3.</span> <span class="toc-text">🚀 标准开发流程演示</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%90%8C%E6%AD%A5%E4%BB%A3%E7%A0%81%EF%BC%88%E7%A1%AE%E4%BF%9D%E5%9F%BA%E4%BA%8E%E6%9C%80%E6%96%B0%E4%BB%A3%E7%A0%81%E5%BC%80%E5%8F%91%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">1️⃣ 同步代码（确保基于最新代码开发）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E5%88%9B%E5%BB%BA%E5%88%86%E6%94%AF"><span class="toc-number">3.2.</span> <span class="toc-text">2️⃣ 创建分支</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E5%BC%80%E5%8F%91%E4%B8%8E%E6%8F%90%E4%BA%A4%EF%BC%88%E5%B0%8F%E6%AD%A5%E6%8F%90%E4%BA%A4%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3️⃣ 开发与提交（小步提交）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-%E6%8E%A8%E9%80%81%E5%88%86%E6%94%AF"><span class="toc-number">3.4.</span> <span class="toc-text">4️⃣ 推送分支</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-%E5%8F%91%E8%B5%B7%E5%90%88%E5%B9%B6%E8%AF%B7%E6%B1%82"><span class="toc-number">3.5.</span> <span class="toc-text">5️⃣ 发起合并请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%EF%B8%8F%E2%83%A3-%E6%B8%85%E7%90%86%EF%BC%88%E5%90%88%E5%B9%B6%E6%88%90%E5%8A%9F%E5%90%8E%EF%BC%89"><span class="toc-number">3.6.</span> <span class="toc-text">6️⃣ 清理（合并成功后）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%92%A1-%E4%B8%93%E5%AE%B6%E6%8F%90%E7%A4%BA"><span class="toc-number">4.</span> <span class="toc-text">💡 专家提示</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E-Rebase%EF%BC%88%E5%8F%98%E5%9F%BA%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">关于 Rebase（变基）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E-gitignore"><span class="toc-number">4.2.</span> <span class="toc-text">关于 .gitignore</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%97%91%EF%B8%8F-%E5%88%86%E6%94%AF%E5%88%A0%E9%99%A4%E6%8C%87%E5%8D%97"><span class="toc-number">5.</span> <span class="toc-text">🗑️ 分支删除指南</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%BA%E5%88%B6%E5%88%A0%E9%99%A4%E6%9C%AA%E5%90%88%E5%B9%B6%E5%88%86%E6%94%AF"><span class="toc-number">5.1.</span> <span class="toc-text">强制删除未合并分支</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F"><span class="toc-number">5.1.1.</span> <span class="toc-text">命令格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-number">5.1.2.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9A%A0%EF%B8%8F-%E9%87%8D%E8%A6%81%E8%AD%A6%E5%91%8A"><span class="toc-number">5.1.3.</span> <span class="toc-text">⚠️ 重要警告</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%BC%BA%E5%88%B6%E5%88%A0%E9%99%A4%EF%BC%9F"><span class="toc-number">5.1.4.</span> <span class="toc-text">为什么需要强制删除？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%AB-%E6%97%A0%E6%B3%95%E5%88%A0%E9%99%A4%E5%BD%93%E5%89%8D%E6%89%80%E5%9C%A8%E5%88%86%E6%94%AF"><span class="toc-number">5.1.5.</span> <span class="toc-text">🚫 无法删除当前所在分支</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%9A%91-%E8%AF%AF%E5%88%A0%E5%88%86%E6%94%AF%E6%81%A2%E5%A4%8D%E6%8C%87%E5%8D%97"><span class="toc-number">6.</span> <span class="toc-text">🚑 误删分支恢复指南</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9A%E4%BD%BF%E7%94%A8-git-reflog%EF%BC%88%E6%9C%80%E6%8E%A8%E8%8D%90%EF%BC%8C%E6%88%90%E5%8A%9F%E7%8E%87%E6%9C%80%E9%AB%98%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">方法一：使用 git reflog（最推荐，成功率最高）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4"><span class="toc-number">6.1.1.</span> <span class="toc-text">操作步骤</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9A%E4%BB%8E%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93%E6%81%A2%E5%A4%8D%EF%BC%88%E5%A6%82%E6%9E%9C%E6%8E%A8%E8%BF%87%E8%BF%9C%E7%A8%8B%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">方法二：从远程仓库恢复（如果推过远程）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4-1"><span class="toc-number">6.2.1.</span> <span class="toc-text">操作步骤</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%89%EF%BC%9A%E4%BD%BF%E7%94%A8-git-fsck%EF%BC%88%E7%BB%88%E6%9E%81%E6%89%8B%E6%AE%B5%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">方法三：使用 git fsck（终极手段）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4-2"><span class="toc-number">6.3.1.</span> <span class="toc-text">操作步骤</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%A0%EF%B8%8F-%E5%85%B3%E9%94%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">6.4.</span> <span class="toc-text">⚠️ 关键注意事项</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/2026-04-21/" title="Redis Cluster 生产环境关键问题与解决方案">Redis Cluster 生产环境关键问题与解决方案</a><time datetime="2026-04-22T06:16:01.000Z" title="Created 2026-04-22 14:16:01">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/hello-world/" title="Hello World">Hello World</a><time datetime="2026-04-22T06:07:39.619Z" title="Created 2026-04-22 14:07:39">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/25/2026-03-25/" title="Spring Boot 并发请求处理能力详解">Spring Boot 并发请求处理能力详解</a><time datetime="2026-03-25T07:30:00.000Z" title="Created 2026-03-25 15:30:00">2026-03-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/29/2025-10-29/" title="Java 并发编程实战：应用场景、常见问题与优雅处理方案">Java 并发编程实战：应用场景、常见问题与优雅处理方案</a><time datetime="2025-10-29T02:00:00.000Z" title="Created 2025-10-29 10:00:00">2025-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/12/2025-10-12/" title="Elasticsearch 生产环境实战：核心概念、问题排查与模糊查询详解">Elasticsearch 生产环境实战：核心概念、问题排查与模糊查询详解</a><time datetime="2025-10-12T02:00:00.000Z" title="Created 2025-10-12 10:00:00">2025-10-12</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By lindl</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
